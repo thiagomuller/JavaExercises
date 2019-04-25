@@ -23,6 +23,15 @@ public class ReadStudentDemo {
             System.out.println("Saving the student on db...");
             session.save(tempStudent);
             session.getTransaction().commit();
+            System.out.println("Saved student, generated id: " + tempStudent.getId());
+
+            session = factory.getCurrentSession();
+            session.beginTransaction();
+            System.out.println("\nGettind student with id: " + tempStudent.getId());
+            Student myStudent = (Student) session.get(Student.class, tempStudent.getId());
+            System.out.println("Get complete: " + myStudent);
+            session.getTransaction().commit();
+
             System.out.println("Done");
 
 
