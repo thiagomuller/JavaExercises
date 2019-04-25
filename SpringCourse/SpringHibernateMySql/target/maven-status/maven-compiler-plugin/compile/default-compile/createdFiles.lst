@@ -1,5 +1,0 @@
-com/thiagomuller/SpringHibernateMySql/Model/Note.class
-com/thiagomuller/SpringHibernateMySql/Repository/NoteRepository.class
-com/thiagomuller/SpringHibernateMySql/Exception/ResourceNotFoundException.class
-com/thiagomuller/SpringHibernateMySql/SpringHibernateMySqlApplication.class
-com/thiagomuller/SpringHibernateMySql/Controller/NoteController.class
