@@ -36,7 +36,7 @@ public class Consolidator {
 
     public void updateAndReplaceToConsolidatedItems(String currentItem, double currentQty, double currentPrice){
         double updatedQty = consolidatedItems.get(currentItem).get(0) + currentQty;
-        double updatedPrice = consolidatedItems.get(currentItem).get(1) + currentPrice;
+        double updatedPrice = (double) Math.round((consolidatedItems.get(currentItem).get(1) + currentPrice) * 100) / 100;
         consolidatedItems.replace(currentItem, Arrays.asList(updatedQty, updatedPrice));
     }
 
