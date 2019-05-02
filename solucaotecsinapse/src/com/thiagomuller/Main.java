@@ -3,20 +3,21 @@ package com.thiagomuller;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 
 public class Main {
     public static void main(String[] args) {
 
         Instant start = Instant.now();
-        Calculator calculator = new Calculator("/home/thiago/Documents/JavaProjectAndExercises/JavaExercises/solucaotecsinapse/recrutamento.csv", 12);
-        Map<String, List<Double>> finalResult = calculator.getItemWithGreaterQty();
-        System.out.println(finalResult);
-        HttpHandler httpHandler = new HttpHandler(
-                "https://eventsync.portaltecsinapse.com.br/public/recrutamento/finalizar?email=mullerthiago8@gmail.com",
-                finalResult);
-        httpHandler.sendPostRequestToTecsinapse();
+        CsvOrderParser csvOrderParser = new CsvOrderParser();
+        List<Order> listOfValidatedOrdersPerMonth =
+                csvOrderParser.mapCSVFileToOrderList("/home/thiago/Documents/JavaProjectAndExercises/JavaExercises/solucaotecsinapse/recrutamento.csv", 12);
+        Consolidator consolidator = new Consolidator();
+        List<ConsolidatedOrder> consolidatedOrders = consolidator.aggregateAndSumOrdersByItem(listOfValidatedOrdersPerMonth);
+        Calculator calculator = new Calculator();
+        ConsolidatedOrder finalResult = calculator.getItemWithGreaterQty(consolidatedOrders);
         Instant finish = Instant.now();
+        TecsinapseSender tec = new TecsinapseSender();
+        tec.sendResultToTecsinapse("https://eventsync.portaltecsinapse.com.br/public/recrutamento/finalizar?email=mullerthiago8@gmail.com", finalResult);
         long timeElapsed = Duration.between(start, finish).toMillis();
         System.out.println(timeElapsed + " milliseconds");
 

@@ -3,46 +3,35 @@ package com.thiagomuller;
 import java.util.*;
 
 public class Consolidator {
-    private CsvOrderParser orderParser;
-    private List<Order> listOfValidatedPerMonthOrders;
-    private Map<String, List<Double>> consolidatedItems;
 
-
-    public Consolidator(String csvFile, int desiredMonth){
-        this.orderParser = new CsvOrderParser(csvFile, desiredMonth);
-        this.listOfValidatedPerMonthOrders = orderParser.mapCSVFileToOrderList();
-        this.consolidatedItems = new HashMap<>();
-    }
-
-
-    public void aggregateAndSumOrdersForItem(){
+    public List<ConsolidatedOrder> aggregateAndSumOrdersByItem(List<Order> listOfValidatedOrdersPerMonth){
+        List<ConsolidatedOrder> consolidatedOrders = new ArrayList<>();
+        Map<String,ConsolidatedOrder> accumulatedItens = new HashMap<>();
         //I decided to use this pure version of for loop here because he is way more performative
         // than forEach or enhanced for loops!
-        for(int i = 0; i < listOfValidatedPerMonthOrders.size(); i ++){
-            String item = listOfValidatedPerMonthOrders.get(i).getItem();
-            double quantity = listOfValidatedPerMonthOrders.get(i).getQuantity();
-            double price = listOfValidatedPerMonthOrders.get(i).getPrice();
-            addOrUpdateToConsolidatedItems(item, quantity, price);
+        for(int i = 0; i < listOfValidatedOrdersPerMonth.size(); i ++){
+            String item = listOfValidatedOrdersPerMonth.get(i).getItem();
+            double quantity = listOfValidatedOrdersPerMonth.get(i).getQuantity();
+            double price = listOfValidatedOrdersPerMonth.get(i).getPrice();
+            ConsolidatedOrder consolidatedOrder = new ConsolidatedOrder(item, quantity, price);
+            if(!accumulatedItens.containsKey(consolidatedOrder.getItem())){
+                accumulatedItens.put(consolidatedOrder.getItem(), consolidatedOrder);
+            } else{
+                updateItemInPossibleItems(accumulatedItens, consolidatedOrder, quantity, price);
+            }
         }
+        consolidatedOrders.addAll(accumulatedItens.values());
+        return consolidatedOrders;
     }
 
-    public void addOrUpdateToConsolidatedItems(String currentItem, double currentQty, double currentPrice){
-        if(!consolidatedItems.containsKey(currentItem)){
-            consolidatedItems.put(currentItem, Arrays.asList(currentQty, currentPrice));
-        } else{
-            updateAndReplaceToConsolidatedItems(currentItem, currentQty, currentPrice);
-        }
+    public void updateItemInPossibleItems(Map<String, ConsolidatedOrder> possibleItems, ConsolidatedOrder consolidatedOrder, double quantity, double price){
+        double updatedQty = possibleItems.get(consolidatedOrder.getItem()).getQuantity() + quantity;
+        double updatedPrice = (double) Math.round((possibleItems.get(consolidatedOrder.getItem()).getPrice() + price) * 100) / 100;
+        consolidatedOrder.setQuantity(updatedQty);
+        consolidatedOrder.setPrice(updatedPrice);
+        possibleItems.replace(consolidatedOrder.getItem(), consolidatedOrder);
+
     }
 
-    public void updateAndReplaceToConsolidatedItems(String currentItem, double currentQty, double currentPrice){
-        double updatedQty = consolidatedItems.get(currentItem).get(0) + currentQty;
-        double updatedPrice = (double) Math.round((consolidatedItems.get(currentItem).get(1) + currentPrice) * 100) / 100;
-        consolidatedItems.replace(currentItem, Arrays.asList(updatedQty, updatedPrice));
-    }
-
-    public Map<String, List<Double>> getConsolidatedItems(){
-        aggregateAndSumOrdersForItem();
-        return consolidatedItems;
-    }
 
 }

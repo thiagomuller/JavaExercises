@@ -8,31 +8,20 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
-import java.util.Map;
 
 public class HttpHandler {
-    private String urlString;
-    private Map<String,List<Double>> finalResult;
 
-    public HttpHandler(String urlString, Map<String,List<Double>> finalResult) {
-        this.urlString = urlString;
-        this.finalResult = finalResult;
-    }
-
-    public void sendPostRequestToTecsinapse(){
-        try{
+    public void sendPostRequest(String urlString, String result) {
+        try {
             URL url = new URL(urlString);
             HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
 
             con.setRequestMethod("POST");
-            con.setRequestProperty("Content-Type","text/plain");
-
-            String bodyString = generateBodyString();
+            con.setRequestProperty("Content-Type", "text/plain");
 
             con.setDoOutput(true);
             DataOutputStream out = new DataOutputStream(con.getOutputStream());
-            out.writeBytes(bodyString);
+            out.writeBytes(result);
             out.flush();
             out.close();
 
@@ -52,19 +41,11 @@ public class HttpHandler {
             System.out.println(response.toString());
             con.disconnect();
 
-        }catch(MalformedURLException malformedUrl){
+        } catch (MalformedURLException malformedUrl) {
             System.out.println("Invalid or malformed URL, please review");
             malformedUrl.printStackTrace();
-        }catch(IOException io){
+        } catch (IOException io) {
             io.printStackTrace();
         }
-    }
-
-    public String generateBodyString(){
-        String bodyString = "";
-        for(String key : finalResult.keySet()){
-            bodyString = key + "#" + String.valueOf(finalResult.get(key).get(1));
-        }
-        return bodyString;
     }
 }
