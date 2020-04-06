@@ -1,64 +1,38 @@
-import java.util.Objects;
-import java.util.Scanner;
-import java.util.StringTokenizer;
-import java.util.regex.Pattern;
-
 public class Calculadora {
-    private Pilha pilha;
-    private double v1;
-    private double v2;
-    private char op;
-    private ConversorDeNotacao conversor;
 
-    public Calculadora() {}
-
-    public void messagemAoUsuario(){
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Digite uma expressão valida\n");
-        String exp = scanner.nextLine().replace(" ","");
-        StringTokenizer tokenizer = new StringTokenizer(exp, "+-*/^()", true);
-        this.conversor = new ConversorDeNotacao(tokenizer);
-        Fila filaResultante = conversor.converterParaPosFixo();
+    public double calcularResultado(Fila expressaoEmPoxFixo, Pilha pilhaDeNumeros){
         try{
-            this.pilha = new Pilha(filaResultante.getUltimo());
-            double resultadoFinal = calcularResultado(filaResultante);
-            System.out.println("O resultado final é: " + resultadoFinal);
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-
-    }
-
-    public double calcularResultado(Fila filaResultante){
-        try{
+            double primeiroOperando = 0.0;
+            double segundoOperando = 0.0;
+            char operador = ' ';
             double resultado = 0;
-            while(filaResultante.getUltimo() > - 1){
-                Object proximoElemento = filaResultante.getItem();
+            while(expressaoEmPoxFixo.getUltimo() > - 1){
+                Object proximoElemento = expressaoEmPoxFixo.getItem();
 
 
-                if(proximoElemento.getClass().equals(String.class) && conversor.isNumero((String)proximoElemento)){
-                    pilha.guarde(Double.parseDouble((String)proximoElemento));
+                if(proximoElemento.getClass().equals(String.class) && ConversorDeNotacao.isNumero((String)proximoElemento)){
+                    pilhaDeNumeros.guarde(Double.parseDouble((String)proximoElemento));
                 }else{
-                    op = (char) proximoElemento;
-                    v2 = (double) pilha.getItem();
-                    pilha.removaItem();
-                    v1 = (double) pilha.getItem();
-                    pilha.removaItem();
-                    resultado = fazerAConta(op);
+                    operador = (char) proximoElemento;
+                    segundoOperando = (double) pilhaDeNumeros.getItem();
+                    pilhaDeNumeros.removaItem();
+                    primeiroOperando = (double) pilhaDeNumeros.getItem();
+                    pilhaDeNumeros.removaItem();
+                    resultado = fazerAConta(operador, primeiroOperando, segundoOperando);
 
-                    pilha.guarde(resultado);
+                    pilhaDeNumeros.guarde(resultado);
 
                 }
 
-                filaResultante.removaItem();
+                expressaoEmPoxFixo.removaItem();
             }
-            if(pilha.getUltimo() > 0){
-                v2 = (double) pilha.getItem();
-                pilha.removaItem();
-                v1 = (double) pilha.getItem();
-                pilha.removaItem();
-                resultado = fazerAConta(op);
-                pilha.guarde(resultado);
+            if(pilhaDeNumeros.getUltimo() > 0){
+                segundoOperando = (double) pilhaDeNumeros.getItem();
+                pilhaDeNumeros.removaItem();
+                primeiroOperando = (double) pilhaDeNumeros.getItem();
+                pilhaDeNumeros.removaItem();
+                resultado = fazerAConta(operador, primeiroOperando , segundoOperando);
+                pilhaDeNumeros.guarde(resultado);
                 return resultado;
             }
             return resultado;
@@ -70,9 +44,9 @@ public class Calculadora {
     }
 
 
-    public double fazerAConta(char op){
+    public double fazerAConta(char op, double v1, double v2){
         double resultado;
-        switch (this.op){
+        switch (op){
             case '+':
                 resultado = v1 + v2;
                 return resultado;

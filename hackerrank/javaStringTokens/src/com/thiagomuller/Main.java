@@ -7,11 +7,17 @@ public class Main {
         Scanner scan = new Scanner(System.in);
         String s = scan.nextLine();
         //He is a very very good boy, isn't he?
+        StringBuilder result = new StringBuilder();
         String[] splitted = s.split("!|,|\\?|\\.|_|'|@|\\s");
-        System.out.println(splitted.length);
+        int counter = 0;
         for(int i=0; i<splitted.length; i++){
-            System.out.println(splitted[i]);
+            if(!splitted[i].equals("")){
+                result.append(splitted[i] + "\n");
+                counter ++;
+            }
         }
+        System.out.println(counter);
+        System.out.println(result);
         scan.close();
     }
 }

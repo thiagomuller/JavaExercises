@@ -1,46 +1,17 @@
 import java.util.StringTokenizer;
 
 public class ConversorDeNotacao {
-    private Pilha pilha;
-    private Fila fila;
-    private StringTokenizer tokenizer;
 
-    public ConversorDeNotacao(StringTokenizer tokenizer){
+    public Fila converterParaPosFixo(Pilha pilhaDeOperadores, Fila expressaoEmPosFixo, StringTokenizer tokenizer){
         try{
-            this.tokenizer = tokenizer;
-            this.pilha = new Pilha(this.tokenizer.countTokens());
-            this.fila = new Fila(this.tokenizer.countTokens());
-        } catch(Exception e){
-            e.printStackTrace();
-        }
-    };
-
-
-    public Fila converterParaPosFixo(){
-        try{
-            while(this.tokenizer.hasMoreTokens()){
-
+            while(tokenizer.hasMoreTokens()){
                 String nextElement = tokenizer.nextToken();
-
-                if(nextElement.equals("(")){
-                    pilha.guarde(nextElement.charAt(0));
-
-                }else if (isNumero(nextElement)){
-                    fila.guarde(nextElement);
-
-                }else if(isOperador(nextElement.charAt(0)) && pilha.vazia()){
-                    pilha.guarde(nextElement.charAt(0));
-
-                }else if(isOperador(nextElement.charAt(0)) && !pilha.vazia()){
-                    isOperadorEPilhaNaoVazia(nextElement, fila, pilha);
-                }else if(nextElement.equals(")")){
-                    isIgualAFechaParenteses(nextElement,fila, pilha);
-                }
+                enviarParaPilhaOuPosFixa(pilhaDeOperadores, expressaoEmPosFixo, nextElement);
             }
 
-            esvaziarORestoDaPilha(pilha);
+            esvaziarORestoDaPilha(pilhaDeOperadores, expressaoEmPosFixo);
 
-            return fila;
+            return expressaoEmPosFixo;
 
         }catch(Exception e){
             e.printStackTrace();
@@ -49,59 +20,52 @@ public class ConversorDeNotacao {
         return null;
     }
 
-    public void isIgualAFechaParenteses(String nextElement, Fila fila, Pilha pilha){
-        try{
-            if(pilha.getItem() != "("){
-                char ultimoItemPilha = (char) pilha.getItem();
-                pilha.removaItem();
-                fila.guarde(ultimoItemPilha);
+    public void enviarParaPilhaOuPosFixa(Pilha pilhaDeOperadores, Fila expressaoEmPosFixo, String nextElement) throws Exception{
+        if(nextElement.equals("(")){
+            pilhaDeOperadores.guarde(nextElement.charAt(0));
+
+        }else if (isNumero(nextElement)){
+            expressaoEmPosFixo.guarde(nextElement);
+
+        }else if(isOperador(nextElement.charAt(0)) && pilhaDeOperadores.vazia()){
+            pilhaDeOperadores.guarde(nextElement.charAt(0));
+
+        }else if(isOperador(nextElement.charAt(0)) && !pilhaDeOperadores.vazia()){
+            isOperadorEPilhaNaoVazia(nextElement, expressaoEmPosFixo, pilhaDeOperadores);
+        }else if(nextElement.equals(")")){
+            isIgualAFechaParenteses(expressaoEmPosFixo, pilhaDeOperadores);
+        }
+    }
+
+    public void isIgualAFechaParenteses(Fila fila, Pilha pilha) throws Exception{
+        if(pilha.getItem() != "("){
+            char ultimoItemPilha = (char) pilha.getItem();
+            pilha.removaItem();
+            fila.guarde(ultimoItemPilha);
+        }
+        pilha.removaItem();
+    }
+
+    public void isOperadorEPilhaNaoVazia(String nextElement, Fila expressaoEmPosFixo, Pilha pilhaDeOperadores) throws Exception{
+        while(!pilhaDeOperadores.vazia() && Tabela.isParaDesempilhar((char)pilhaDeOperadores.getItem(), nextElement.charAt(0))){
+            char ultimoItemPilha = (char) pilhaDeOperadores.getItem();
+            expressaoEmPosFixo.guarde(ultimoItemPilha);
+            pilhaDeOperadores.removaItem();
+        }
+        pilhaDeOperadores.guarde(nextElement.charAt(0));
+    }
+
+    public void esvaziarORestoDaPilha(Pilha pilha, Fila fila) throws Exception{
+        while(!pilha.vazia()){
+            if(pilha.getItem() != null && (char)pilha.getItem() != '(' && (char)pilha.getItem() != ')'){
+                fila.guarde(pilha.getItem());
             }
             pilha.removaItem();
-        }catch(Exception e){
-            e.printStackTrace();
         }
 
     }
 
-    public void isOperadorEPilhaNaoVazia(String nextElement, Fila fila, Pilha pilha){
-        try{
-            while(!pilha.vazia() && Tabela.isParaDesempilhar((char)pilha.getItem(), nextElement.charAt(0))){
-                if(nextElement.charAt(0) == (char)pilha.getItem()){
-                    char ultimoItemPilha = (char) pilha.getItem();
-                    pilha.removaItem();
-                    fila.guarde(ultimoItemPilha);
-                    pilha.guarde(ultimoItemPilha);
-                    break;
-                }else{
-                    char ultimoItemPilha = (char) pilha.getItem();
-                    pilha.removaItem();
-                    fila.guarde(ultimoItemPilha);
-                }
-            }
-            if(!pilha.vazia() && !Tabela.isParaDesempilhar((char)pilha.getItem(), nextElement.charAt(0))){
-                pilha.guarde(nextElement.charAt(0));
-            }
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-
-    }
-
-    public void esvaziarORestoDaPilha(Pilha pilha){
-        try{
-            while(!pilha.vazia()){
-                if(pilha.getItem() != null && (char)pilha.getItem() != '(' && (char)pilha.getItem() != ')'){
-                    fila.guarde(pilha.getItem());
-                }
-                pilha.removaItem();
-            }
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-
-    }
-
-    public boolean isNumero(String str) {
+    public static boolean isNumero(String str){
 
         try {
             Double.parseDouble(str);
@@ -112,7 +76,7 @@ public class ConversorDeNotacao {
     }
 
     public boolean isOperador(char c){
-        return true ? c == '+' || c == '-' || c == '*' || c == '/' || c == '^' : false;
+        return c == '+' || c == '-' || c == '*' || c == '/' || c == '^';
     }
 
 
